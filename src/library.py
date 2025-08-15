@@ -23,6 +23,9 @@ class Book:
 
     def display_info(self):
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
+    
+    def __str__(self):
+        return self.display_info()
 
 class EBook(Book):
     def __init__(self, title: str, author: str, isbn: str, file_format: str, file_size: float):
@@ -48,18 +51,74 @@ class Library:
         self._books = []
 
     def add_book(self, book: Book):
+        # ISBN ile kontrol
+        existing_book = self.find_book_by_isbn(book.isbn)
+        if existing_book:
+            print(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            return False
+        
         self._books.append(book)
+        print(f"Kitap başarıyla eklendi: {book.display_info()}")
+        return True
 
-    def remove_book(self, book: Book):
-        self._books.remove(book)
+    def remove_book(self, isbn: str):
+        book = self.find_book_by_isbn(isbn)
+        if book:
+            self._books.remove(book)
+            print(f"Kitap başarıyla silindi: {book.display_info()}")
+            return True
+        else:
+            print(f"ISBN {isbn} ile kitap bulunamadı.")
+            return False
 
     def display_books(self):
-        return [book.display_info() for book in self._books]
-
-    def find_book(self, title: str):
+        if not self._books:
+            print("Kütüphanede hiç kitap yok.")
+            return
+        
+        print(f"\n{self.name} - Toplam {len(self._books)} kitap:")
+        print("-" * 50)
+        for i, book in enumerate(self._books, 1):
+            status = " (Ödünç verildi)" if book.is_borrowed else ""
+            print(f"{i}. {book.display_info()}{status}")
+    
+    def find_book_by_title(self, title: str):
         for book in self._books:
-            if book.title == title:
+            if book.title.lower() == title.lower():
                 return book
+        return None
+    
+    def find_book_by_isbn(self, isbn: str):
+        for book in self._books:
+            if book.isbn == isbn:
+                return book
+        return None
+    
+    def find_book_by_author(self, author: str):
+        for book in self._books:
+            if book.author.lower() == author.lower():
+                return book
+        return None
+    
+    def find_book(self, title: str, author: str, isbn: str):
+        # Try to find by title first (if provided)
+        if title.strip():
+            book = self.find_book_by_title(title)
+            if book:
+                return book
+        
+        # Try to find by author (if provided)
+        if author.strip():
+            book = self.find_book_by_author(author)
+            if book:
+                return book
+        
+        # Try to find by ISBN (if provided)
+        if isbn.strip():
+            book = self.find_book_by_isbn(isbn)
+            if book:
+                return book
+        
         return None
 
     @property
@@ -75,35 +134,8 @@ class Member:
     borrowed_books: List[Book] = field(default_factory=list)
 
 class PydanticBook(BaseModel):
-    title: str = Field(..., max_length=100)
-    author: str = Field(..., max_length=100)
+    title: str
+    author: str
     isbn: str = Field(..., min_length=10, max_length=13)
-    publication_year: int = Field(..., ge=1450, le=2025)
+    publication_year: int = Field(..., gt=1400, le=2030)
 
-# deneme 1 (geçerli örnek)
-
-try:
-    book = PydanticBook(
-        title="1984",
-        author="George Orwell",
-        isbn="1234567890",
-        publication_year=1949
-    )
-    print(f"Valid book created:")
-    print(book.model_dump_json(indent=4))
-except ValidationError as e:
-    print(e)
-
-
-# deneme 2 (geçersiz örnek)
-
-try:
-    book = PydanticBook(
-        title="SomeTitle",
-        author="SomeAuthor",
-        isbn="123",
-        publication_year=2030
-    )
-    print(book)
-except ValidationError as e:
-    print(e)
