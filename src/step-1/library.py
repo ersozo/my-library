@@ -38,8 +38,39 @@ class AudioBook(Book):
         return f"{super().display_info()} - Duration: {self.duration_hours} hours"
 
 
-ebook = EBook("1984", "George Orwell", "1234567890", "PDF", 1.5)
-audio_book = AudioBook("1984", "George Orwell", "1234567890", 10.5)
+class Library:
+    def __init__(self, name: str):
+        self.name = name
+        self._books = []
 
-print(ebook.display_info())
-print(audio_book.display_info())
+    def add_book(self, book: Book):
+        self._books.append(book)
+
+    def remove_book(self, book: Book):
+        self._books.remove(book)
+
+    def display_books(self):
+        return [book.display_info() for book in self._books]
+
+    def find_book(self, title: str):
+        for book in self._books:
+            if book.title == title:
+                return book
+        return None
+
+    @property
+    def total_books(self):
+        return len(self._books)
+
+
+ebook = EBook("1984", "George Orwell", "1234567890", "PDF", 1.5)
+audio_book = AudioBook("Hamlet", "William Shakespeare", "0987654321", 10.5)
+
+my_library = Library(name="My Library 01")
+my_library.add_book(ebook)
+my_library.add_book(audio_book)
+
+print(my_library.display_books())
+print(my_library.find_book(title="1984").display_info())
+
+print(my_library.total_books)
