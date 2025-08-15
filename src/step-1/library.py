@@ -1,3 +1,7 @@
+from dataclasses import dataclass, field
+from typing import List
+from pydantic import BaseModel, Field, ValidationError
+
 class Book:
     def __init__(self, title: str, author: str, isbn: str):
         self.title = title
@@ -63,14 +67,43 @@ class Library:
         return len(self._books)
 
 
-ebook = EBook("1984", "George Orwell", "1234567890", "PDF", 1.5)
-audio_book = AudioBook("Hamlet", "William Shakespeare", "0987654321", 10.5)
+@dataclass
+class Member:
+    name: str
+    member_id: str
+    email: str
+    borrowed_books: List[Book] = field(default_factory=list)
 
-my_library = Library(name="My Library 01")
-my_library.add_book(ebook)
-my_library.add_book(audio_book)
+class PydanticBook(BaseModel):
+    title: str = Field(..., max_length=100)
+    author: str = Field(..., max_length=100)
+    isbn: str = Field(..., min_length=10, max_length=13)
+    publication_year: int = Field(..., ge=1450, le=2025)
 
-print(my_library.display_books())
-print(my_library.find_book(title="1984").display_info())
+# deneme 1 (geçerli örnek)
 
-print(my_library.total_books)
+try:
+    book = PydanticBook(
+        title="1984",
+        author="George Orwell",
+        isbn="1234567890",
+        publication_year=1949
+    )
+    print(f"Valid book created:")
+    print(book.model_dump_json(indent=4))
+except ValidationError as e:
+    print(e)
+
+
+# deneme 2 (geçersiz örnek)
+
+try:
+    book = PydanticBook(
+        title="SomeTitle",
+        author="SomeAuthor",
+        isbn="123",
+        publication_year=2030
+    )
+    print(book)
+except ValidationError as e:
+    print(e)
