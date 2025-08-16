@@ -15,13 +15,13 @@ class Book:
         if not self.is_borrowed:
             self.is_borrowed = True
             return True
-        raise Exception(f"{self.title} is already borrowed.")
+        raise Exception(f"{self.title} zaten ödünç verildi.")
 
     def return_book(self):
         if self.is_borrowed:
             self.is_borrowed = False
             return True
-        raise Exception(f"{self.title} was not borrowed.")
+        raise Exception(f"{self.title} ödünç verilmedi.")
 
     def display_info(self):
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
@@ -36,7 +36,7 @@ class EBook(Book):
         self.file_size = file_size
 
     def display_info(self):
-        return f"{super().display_info()} - Format: {self.file_format} - Size: {self.file_size}MB"
+        return f"{super().display_info()} - Format: {self.file_format} - Dosya Boyutu: {self.file_size}MB"
 
 class AudioBook(Book):
     def __init__(self, title: str, author: str, isbn: str, duration_hours: float):
@@ -44,7 +44,7 @@ class AudioBook(Book):
         self.duration_hours = duration_hours
 
     def display_info(self):
-        return f"{super().display_info()} - Duration: {self.duration_hours} hours"
+        return f"{super().display_info()} - Süre: {self.duration_hours} saat"
 
 
 class Library:
