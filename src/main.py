@@ -61,7 +61,7 @@ def add_book_menu(library):
             
             
         except ValidationError as e:
-            print("\n❌ Kitap bilgileri geçersiz:")
+            print("\nKitap bilgileri geçersiz:")
             print("-" * 40)
             
             # Hata mesajlarını daha iyi görünüm için gruplandırıyoruz
@@ -83,7 +83,7 @@ def add_book_menu(library):
                     'publication_year': 'Yayın Yılı'
                 }.get(field, field)
                 
-                print(f"\n🔸 {field_name}:")
+                print(f"\n{field_name}:")
                 for message, input_value in field_errors:
                     if field == 'isbn':
                         if 'at least' in message:
@@ -108,7 +108,7 @@ def add_book_menu(library):
                     else:
                         print(f"   • {message} (girilen: '{input_value}')")
             
-            print("\n💡 Lütfen bilgileri kontrol edip tekrar deneyin.")
+            print("\nLütfen bilgileri kontrol edip tekrar deneyin.")
             return
 
     except KeyboardInterrupt:
