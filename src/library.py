@@ -227,13 +227,11 @@ class Library:
         return None
     
     def find_book(self):
-        self.display.search("\nKİTAP ARAMA")
-        print("-" * 30)
         print("\t1. Başlığa göre ara")
         print("\t2. Yazara göre ara")
         print("\t3. ISBN'e göre ara")
         
-        choice = input("Arama türünü seçin (1-3): ").strip()
+        choice = input("\nArama türünü seçin (1-3): ").strip()
         
         if choice == "1":
             title = input("\tKitap başlığını girin: ").strip()

@@ -15,21 +15,23 @@ def display_menu():
     print("2. Kitap Sil")
     print("3. Kitapları Listele")
     print("4. Kitap Ara")
-    print("5. Çıkış")
+    print("5. Kitap Ödünç Al")
+    print("6. Kitap İade Et")
+    print("7. Çıkış")
     print("=" * 40)
 
 
 def get_user_choice():
     while True:
         try:
-            choice = input("Seçiminizi yapın (1-5): ").strip()
-            if choice in ['1', '2', '3', '4', '5']:
+            choice = input("Seçiminizi yapın (1-7): ").strip()
+            if choice in ['1', '2', '3', '4', '5', '6', '7']:
                 return choice
             else:
-                print("Geçersiz seçim! Lütfen 1-5 arası bir sayı girin.")
+                print("Geçersiz seçim! Lütfen 1-7 arası bir sayı girin.")
         except KeyboardInterrupt:
             display.warning("Program sonlandırılıyor...")
-            return '5'
+            return '7'
 
 
 def add_book_menu(library):
@@ -88,7 +90,7 @@ def add_book_menu(library):
                 book = EBook(validated_book.title, validated_book.author, validated_book.isbn, file_format, file_size)
             elif book_type == '3':
                 # Sesli Kitap
-                duration_input = input("Süre (saat): ").strip()
+                duration_input = input("Süre (dakika): ").strip()
                 try:
                     duration_minutes = int(duration_input)
                 except ValueError:
@@ -195,6 +197,56 @@ def find_book_menu(library, display):
         display.error(f"Arama sırasında hata oluştu: {e}")
 
 
+def borrow_book_menu(library):
+    print("\n--- KİTAP ÖDÜNÇ ALMA ---")
+    
+    if library.total_books == 0:
+        display.warning("Kütüphanede ödünç alınacak kitap yok.")
+        return
+    
+    try:
+        # Önce mevcut kitapları gösteriyoruz
+        display.info("Mevcut kitaplar:")
+        library.display_books()
+        
+        isbn = input("\nÖdünç almak istediğiniz kitabın ISBN numarası: ").strip()
+        if not isbn:
+            display.warning("ISBN numarası boş olamaz!")
+            return
+
+        library.borrow_book(isbn)
+
+    except KeyboardInterrupt:
+        display.warning("\nKitap ödünç alma işlemi iptal edildi.")
+    except Exception as e:
+        display.error(f"Kitap ödünç alınırken hata oluştu: {e}")
+
+
+def return_book_menu(library):
+    print("\n--- KİTAP İADE ETME ---")
+    
+    if library.total_books == 0:
+        display.info("Kütüphanede iade edilecek kitap yok.")
+        return
+    
+    try:
+        # Önce mevcut kitapları gösteriyoruz
+        display.info("Mevcut kitaplar:")
+        library.display_books()
+        
+        isbn = input("\nİade etmek istediğiniz kitabın ISBN numarası: ").strip()
+        if not isbn:
+            display.warning("ISBN numarası boş olamaz!")
+            return
+
+        library.return_book(isbn)
+
+    except KeyboardInterrupt:
+        display.warning("Kitap iade işlemi iptal edildi.")
+    except Exception as e:
+        display.error(f"Kitap iade edilirken hata oluştu: {e}")
+
+
 def main():
 
     display = UnicodeDisplay()
@@ -215,6 +267,10 @@ def main():
             elif choice == '4':
                 find_book_menu(library, display)
             elif choice == '5':
+                borrow_book_menu(library)
+            elif choice == '6':
+                return_book_menu(library)
+            elif choice == '7':
                 display.info("Kütüphane sistemi kapatılıyor...")
                 book_count = library.total_books
                 if book_count > 0:
