@@ -11,50 +11,52 @@ def display_menu():
     print("\n" + "=" * 40)
     print("   KÜTÜPHANE YÖNETİM SİSTEMİ")
     print("=" * 40)
-    print("1. Kitap Ekle")
-    print("2. Kitap Sil")
-    print("3. Kitapları Listele")
-    print("4. Kitap Ara")
-    print("5. Kitap Ödünç Al")
-    print("6. Kitap İade Et")
-    print("7. Çıkış")
+    print("1. Kitap Ekle (Manuel)")
+    print("2. Kitap Ekle (ISBN ile)")
+    print("3. Kitap Sil")
+    print("4. Kitapları Listele")
+    print("5. Kitap Ara")
+    print("6. Kitap Ödünç Al")
+    print("7. Kitap İade Et")
+    print("8. Çıkış")
     print("=" * 40)
 
 
 def get_user_choice():
     while True:
         try:
-            choice = input("Seçiminizi yapın (1-7): ").strip()
-            if choice in ['1', '2', '3', '4', '5', '6', '7']:
+            choice = input("Seçiminizi yapın (1-8): ").strip()
+            if choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
                 return choice
             else:
-                print("Geçersiz seçim! Lütfen 1-7 arası bir sayı girin.")
+                display.warning("Geçersiz seçim! Lütfen 1-8 arası bir sayı girin.")
         except KeyboardInterrupt:
+            print("")
             display.warning("Program sonlandırılıyor...")
-            return '7'
+            return '8'
 
 
 def add_book_menu(library):
-    print("\n--- KİTAP EKLEME ---")
+    print("\n--- KİTAP EKLEME (MANUEL) ---\n")
     
     # Kitap türü seçimi
-    display.book("Kitap türünü seçin:")
+    display.book("Kitap türünü seçin:\n")
     print("\t1. Normal Kitap")
     print("\t2. E-Kitap")
     print("\t3. Sesli Kitap")
     
     try:
-        book_type = input("Seçiminizi yapın (1-3): ").strip()
+        book_type = input("\nSeçiminizi yapın (1-3): ").strip()
         
         if book_type not in ['1', '2', '3']:
-            display.error("Geçersiz seçim! Lütfen 1-3 arası bir sayı girin.")
+            display.warning("Geçersiz seçim! Lütfen 1-3 arası bir sayı girin.")
             return
         
         # Ortak bilgiler
-        title = input("\tKitap başlığı: ").strip()
-        author = input("\tYazar adı: ").strip()
-        isbn = input("\tISBN numarası (10-13 karakter): ").strip()
-        publication_year_input = input("\tYayın yılı (1401-2030): ").strip()
+        title = input("\tKitap başlığı\t\t\t: ").strip()
+        author = input("\tYazar adı\t\t\t: ").strip()
+        isbn = input("\tISBN numarası (10-13 karakter)\t: ").strip()
+        publication_year_input = input("\tYayın yılı (1401-2030)\t\t: ").strip()
 
         # yayın yılını Pydantic doğrulaması için int'e çeviriyoruz
         if publication_year_input:
@@ -101,6 +103,7 @@ def add_book_menu(library):
             library.add_book(book)
             
         except ValidationError as e:
+            print("")
             display.error("Kitap bilgileri geçersiz:")
             print("-" * 40)
             
@@ -153,9 +156,39 @@ def add_book_menu(library):
             return
 
     except KeyboardInterrupt:
+        print("")
         display.warning("Kitap ekleme işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Beklenmeyen hata: {e}")
+
+
+def add_book_by_isbn_menu(library):
+    print("\n--- KİTAP EKLEME (ISBN İLE) ---")
+    
+    try:
+        display.info("Open Library API kullanarak kitap bilgileri otomatik olarak çekilecektir.")
+        display.warning("İnternet bağlantısı gereklidir.")
+        
+        isbn = input("\n\tKitap ISBN numarasını girin: ").strip()
+        if not isbn:
+            display.warning("ISBN numarası boş olamaz!")
+            return
+        
+        display.info(f"ISBN {isbn} ile kitap aranıyor...")
+        display.info("Open Library API'den bilgiler çekiliyor...")
+        
+        success = library.add_book_by_isbn(isbn)
+        
+        if success:
+            display.success("Kitap başarıyla eklendi!")
+        else:
+            display.error("Kitap eklenemedi. Lütfen ISBN'i ve internet bağlantınızı kontrol edin!")
+
+    except KeyboardInterrupt:
+        print("")
+        display.warning("Kitap ekleme işlemi iptal edildi.")
+    except Exception as e:
+        display.error(f"Kitap eklenirken hata oluştu: {e}")
 
 
 def remove_book_menu(library):
@@ -173,6 +206,7 @@ def remove_book_menu(library):
         library.remove_book(isbn)
 
     except KeyboardInterrupt:
+        print("")
         display.warning("Kitap silme işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap silinirken hata oluştu: {e}")
@@ -184,7 +218,7 @@ def list_books_menu(library):
 
 
 def find_book_menu(library, display):
-    print("\n--- KİTAP ARAMA ---")
+    print("\n--- KİTAP ARAMA ---\n")
     
     if library.total_books == 0:
         display.info("Kütüphanede aranacak kitap yok.")
@@ -192,6 +226,7 @@ def find_book_menu(library, display):
     try:
         library.find_book()
     except KeyboardInterrupt:
+        print("")
         display.warning("Arama işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Arama sırasında hata oluştu: {e}")
@@ -217,7 +252,8 @@ def borrow_book_menu(library):
         library.borrow_book(isbn)
 
     except KeyboardInterrupt:
-        display.warning("\nKitap ödünç alma işlemi iptal edildi.")
+        print("")
+        display.warning("Kitap ödünç alma işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap ödünç alınırken hata oluştu: {e}")
 
@@ -242,6 +278,7 @@ def return_book_menu(library):
         library.return_book(isbn)
 
     except KeyboardInterrupt:
+        print("")
         display.warning("Kitap iade işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap iade edilirken hata oluştu: {e}")
@@ -261,28 +298,32 @@ def main():
             if choice == '1':
                 add_book_menu(library)
             elif choice == '2':
-                remove_book_menu(library)
+                add_book_by_isbn_menu(library)
             elif choice == '3':
-                list_books_menu(library)
+                remove_book_menu(library)
             elif choice == '4':
-                find_book_menu(library, display)
+                list_books_menu(library)
             elif choice == '5':
-                borrow_book_menu(library)
+                find_book_menu(library, display)
             elif choice == '6':
-                return_book_menu(library)
+                borrow_book_menu(library)
             elif choice == '7':
+                return_book_menu(library)
+            elif choice == '8':
+                print("")
                 display.info("Kütüphane sistemi kapatılıyor...")
                 book_count = library.total_books
                 if book_count > 0:
                     display.info(f"Toplam {book_count} kitap kayıtlı.")
                 else:
                     display.info("Kütüphanede kayıtlı kitap yok.")
-                display.info("İyi günler!")
+                display.info("İyi günler!\n")
                 break
 
         except KeyboardInterrupt:
+            print("")
             display.warning("Program sonlandırılıyor...")
-            display.info("İyi günler!")
+            display.info("İyi günler!\n")
             break
         except Exception as e:
             display.error(f"Beklenmeyen bir hata oluştu: {e}")

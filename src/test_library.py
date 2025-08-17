@@ -26,3 +26,6 @@ def test_book_return():
 
     with pytest.raises(Exception):
         book.return_book()
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

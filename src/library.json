@@ -1,4 +1,19 @@
 {
   "name": "Kütüphanem",
-  "books": []
+  "books": [
+    {
+      "title": "Practical Deep Learning for Cloud and Mobile",
+      "author": "Anirudh Koul & Siddha Ganju & Meher Kasam",
+      "isbn": "9781492034865",
+      "is_borrowed": false,
+      "type": "Book"
+    },
+    {
+      "title": "Generative Deep Learning",
+      "author": "David Foster",
+      "isbn": "9781098134181",
+      "is_borrowed": false,
+      "type": "Book"
+    }
+  ]
 }

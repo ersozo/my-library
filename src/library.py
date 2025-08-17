@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel, Field, ValidationError
 import json
 from pathlib import Path
+import httpx
 from message_display import UnicodeDisplay
 
 
@@ -234,24 +235,25 @@ class Library:
         choice = input("\nArama türünü seçin (1-3): ").strip()
         
         if choice == "1":
-            title = input("\tKitap başlığını girin: ").strip()
+            title = input("\n\tKitap başlığını girin: ").strip()
             book = self.find_book_by_title(title)
         elif choice == "2":
-            author = input("\tYazar adını girin: ").strip()
+            author = input("\n\tYazar adını girin: ").strip()
             book = self.find_book_by_author(author)
         elif choice == "3":
-            isbn = input("\tISBN numarasını girin: ").strip()
+            isbn = input("\n\tISBN numarasını girin: ").strip()
             book = self.find_book_by_isbn(isbn)
         else:
+            print("")
             self.display.error("Geçersiz seçim!")
             return
-        
+        print("")
         if book:
-            self.display.success(f"Kitap bulundu:")
-            print(f"\tBaşlık: {book.title}")
-            print(f"\tYazar: {book.author}")
-            print(f"\tISBN: {book.isbn}")
-            print(f"\tDurum: {'Ödünç verildi' if book.is_borrowed else 'Mevcut'}")
+            self.display.success(f"Kitap bulundu:\n")
+            print(f"\tBaşlık\t: {book.title}")
+            print(f"\tYazar\t: {book.author}")
+            print(f"\tISBN\t: {book.isbn}")
+            print(f"\tDurum\t: {'Ödünç verildi' if book.is_borrowed else 'Mevcut'}")
         else:
             self.display.error("Kitap bulunamadı.")
 
@@ -260,6 +262,86 @@ class Library:
     @property
     def total_books(self):
         return len(self._books)
+    
+
+    def fetch_book_from_api(self, isbn: str):
+        try:
+            url = f"https://openlibrary.org/isbn/{isbn}.json"
+
+            with httpx.Client(timeout=10.0, follow_redirects=True) as client:
+                response = client.get(url)
+
+                if response.status_code == 404:
+                    self.display.error(f"Kitap bulunamadı: ISBN {isbn} ile kitap bulunamadı.")
+                    return None
+                elif response.status_code != 200:
+                    self.display.error(f"API hatası: HTTP {response.status_code}")
+                    return None
+
+                data = response.json()
+
+                # Kitap bilgilerini al
+                title = data.get("title", "Bilinmeyen Başlık")
+                authors_data = data.get("authors", [])
+
+                # Yazar adlarını al
+                author_names = []
+                for author_ref in authors_data:
+                    try:
+                        author_url = f"https://openlibrary.org{author_ref['key']}.json"
+                        author_response = client.get(author_url, follow_redirects=True)
+                        if author_response.status_code == 200:
+                            author_data = author_response.json()
+                            author_name = author_data.get("name", "Bilinmeyen Yazar")
+                            author_names.append(author_name)
+                    except Exception:
+                        author_names.append("Bilinmeyen Yazar")
+
+                # Eğer yazar bulunamazsa varsayılan değer kullan
+                if not author_names:
+                    author_names = ["Bilinmeyen Yazar"]
+
+                # Birden fazla yazarı " & " ile birleştir
+                author = " & ".join(author_names)
+
+                return {
+                    "title": title,
+                    "author": author,
+                    "isbn": isbn
+                }
+
+        except httpx.TimeoutException:
+            self.display.error("API isteği zaman aşımına uğradı. İnternet bağlantınızı kontrol edin.")
+            return None
+        except httpx.RequestError as e:
+            self.display.error(f"API isteği başarısız: {e}")
+            return None
+        except Exception as e:
+            self.display.error(f"Beklenmeyen hata: {e}")
+            return None
+
+
+    def add_book_by_isbn(self, isbn: str):
+        # Kitap zaten mevcut mu kontrolü
+        existing_book = self.find_book_by_isbn(isbn)
+        if existing_book:
+            self.display.error(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            return False
+
+        # API'den kitap bilgilerini al
+        book_info = self.fetch_book_from_api(isbn)
+        if not book_info:
+            return False
+
+        # Kitap nesnesi oluştur
+        book = Book(book_info["title"], book_info["author"], isbn)
+
+        # Kütüphaneye ekle
+        self._books.append(book)
+        self.display.success(f"Kitap başarıyla eklendi: {book.display_info()}")
+        self.save_to_json()
+        return True
+
 
 
 @dataclass
