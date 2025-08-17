@@ -3,6 +3,8 @@ from typing import List
 from pydantic import BaseModel, Field, ValidationError
 import json
 from pathlib import Path
+from message_display import UnicodeDisplay
+
 
 class Book:
     def __init__(self, title: str, author: str, isbn: str):
@@ -39,21 +41,23 @@ class EBook(Book):
         return f"{super().display_info()} - Format: {self.file_format} - Dosya Boyutu: {self.file_size}MB"
 
 class AudioBook(Book):
-    def __init__(self, title: str, author: str, isbn: str, duration_hours: float):
+    def __init__(self, title: str, author: str, isbn: str, duration_minutes: int):
         super().__init__(title, author, isbn)
-        self.duration_hours = duration_hours
+        self.duration_minutes = duration_minutes
 
     def display_info(self):
-        return f"{super().display_info()} - Süre: {self.duration_hours} saat"
+        return f"{super().display_info()} - Süre: {self.duration_minutes} dakika"
 
 
 class Library:
     def __init__(self, name: str, json_file: str = "library.json"):
         self.name = name
         self._books = []
-        self.json_file = json_file
+        self.json_file = json_file       # verileri kaydetmek için JSON dosyası
+        self.display = UnicodeDisplay()  # mesaj gösterme için
         self.load_from_json()
 
+    # Kitap nesnesini dict formatına dönüştürür
     def _book_to_dict(self, book: Book):
         book_dict = {
             "title": book.title,
@@ -69,10 +73,11 @@ class Library:
             book_dict["file_size"] = book.file_size
         elif isinstance(book, AudioBook):
             book_dict["type"] = "AudioBook"
-            book_dict["duration_hours"] = book.duration_hours
+            book_dict["duration_minutes"] = book.duration_minutes
             
         return book_dict
 
+    # dict formatından kitap nesnesine dönüştürür
     def _dict_to_book(self, book_dict: dict):
         book_type = book_dict.get("type", "Book")
         
@@ -89,7 +94,7 @@ class Library:
                 title=book_dict["title"],
                 author=book_dict["author"],
                 isbn=book_dict["isbn"],
-                duration_hours=book_dict["duration_hours"]
+                duration_minutes=book_dict["duration_minutes"]
             )
         else:
             book = Book(
@@ -101,6 +106,7 @@ class Library:
         book.is_borrowed = book_dict.get("is_borrowed", False)
         return book
 
+    # Kütüphane verilerini JSON dosyasına kaydeder
     def save_to_json(self):
         try:
             books_data = [self._book_to_dict(book) for book in self._books]
@@ -112,16 +118,17 @@ class Library:
             with open(self.json_file, 'w', encoding='utf-8') as f:
                 json.dump(library_data, f, indent=2, ensure_ascii=False)
             
-            print(f"Kütüphane verileri {self.json_file} dosyasına kaydedildi.")
+            self.display.success(f"Kütüphane verileri {self.json_file} dosyasına kaydedildi.")
             return True
         except Exception as e:
-            print(f"JSON dosyasına kaydederken hata oluştu: {e}")
+            self.display.error(f"JSON dosyasına kaydederken hata oluştu: {e}")
             return False
 
+    # Kütüphane verilerini JSON dosyasından yükler
     def load_from_json(self):
         try:
             if not Path(self.json_file).exists():
-                print(f"JSON dosyası {self.json_file} bulunamadı. Boş kütüphane ile başlanıyor.")
+                self.display.warning(f"JSON dosyası {self.json_file} bulunamadı. Boş kütüphane ile başlanıyor.")
                 return False
             
             with open(self.json_file, 'r', encoding='utf-8') as f:
@@ -131,21 +138,21 @@ class Library:
             books_data = library_data.get("books", [])
             
             self._books = [self._dict_to_book(book_dict) for book_dict in books_data]
-            print(f"{self.total_books} kitap {self.json_file} dosyasından yüklendi.")
+            self.display.success(f"{self.total_books} kitap {self.json_file} dosyasından yüklendi.")
             return True
         except Exception as e:
-            print(f"JSON dosyasından yüklerken hata oluştu: {e}")
+            self.display.error(f"JSON dosyasından yüklerken hata oluştu: {e}")
             return False
 
     def add_book(self, book: Book):
         # ISBN ile kontrol
         existing_book = self.find_book_by_isbn(book.isbn)
         if existing_book:
-            print(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            self.display.warning(f"Kitap zaten mevcut: {existing_book.display_info()}")
             return False
         
         self._books.append(book)
-        print(f"Kitap başarıyla eklendi: {book.display_info()}")
+        self.display.success(f"Kitap başarıyla eklendi: {book.display_info()}")
         self.save_to_json()  
         return True
 
@@ -153,11 +160,11 @@ class Library:
         book = self.find_book_by_isbn(isbn)
         if book:
             self._books.remove(book)
-            print(f"Kitap başarıyla silindi: {book.display_info()}")
+            self.display.success(f"Kitap başarıyla silindi: {book.display_info()}")
             self.save_to_json()  
             return True
         else:
-            print(f"ISBN {isbn} ile kitap bulunamadı.")
+            self.display.error(f"ISBN {isbn} ile kitap bulunamadı.")
             return False
 
     def borrow_book(self, isbn: str):
@@ -165,42 +172,41 @@ class Library:
         if book:
             try:
                 book.borrow_book()
-                print(f"Kitap ödünç verildi: {book.display_info()}")
+                self.display.success(f"Kitap ödünç verildi: {book.display_info()}")
                 self.save_to_json()  
                 return True
             except Exception as e:
-                print(f"Hata: {e}")
+                self.display.error(f"Hata: {e}")
                 return False
         else:
-            print(f"ISBN {isbn} ile kitap bulunamadı.")
+            self.display.error(f"ISBN {isbn} ile kitap bulunamadı.")
             return False
 
     def return_book(self, isbn: str):
-        """Return a book by ISBN and save changes."""
         book = self.find_book_by_isbn(isbn)
         if book:
             try:
                 book.return_book()
-                print(f"Kitap iade edildi: {book.display_info()}")
+                self.display.success(f"Kitap iade edildi: {book.display_info()}")
                 self.save_to_json() 
                 return True
             except Exception as e:
-                print(f"Hata: {e}")
+                self.display.error(f"Hata: {e}")
                 return False
         else:
-            print(f"ISBN {isbn} ile kitap bulunamadı.")
+            self.display.error(f"ISBN {isbn} ile kitap bulunamadı.")
             return False
 
     def display_books(self):
         if not self._books:
-            print("Kütüphanede hiç kitap yok.")
+            self.display.info("Kütüphanede hiç kitap yok.")
             return
         
-        print(f"\n{self.name} - Toplam {self.total_books} kitap:")
+        self.display.success(f"{self.name} - Toplam {self.total_books} kitap:")
         print("-" * 50)
         for i, book in enumerate(self._books, 1):
             status = " (Ödünç verildi)" if book.is_borrowed else ""
-            print(f"{i}. {book.display_info()}{status}")
+            print(f"\t{i}. {book.display_info()}{status}")
     
     def find_book_by_title(self, title: str):
         for book in self._books:
@@ -220,23 +226,38 @@ class Library:
                 return book
         return None
     
-    def find_book(self, title: str, author: str, isbn: str):
-        if title.strip():
+    def find_book(self):
+        self.display.search("\nKİTAP ARAMA")
+        print("-" * 30)
+        print("\t1. Başlığa göre ara")
+        print("\t2. Yazara göre ara")
+        print("\t3. ISBN'e göre ara")
+        
+        choice = input("Arama türünü seçin (1-3): ").strip()
+        
+        if choice == "1":
+            title = input("\tKitap başlığını girin: ").strip()
             book = self.find_book_by_title(title)
-            if book:
-                return book
-        
-        if author.strip():
+        elif choice == "2":
+            author = input("\tYazar adını girin: ").strip()
             book = self.find_book_by_author(author)
-            if book:
-                return book
-        
-        if isbn.strip():
+        elif choice == "3":
+            isbn = input("\tISBN numarasını girin: ").strip()
             book = self.find_book_by_isbn(isbn)
-            if book:
-                return book
+        else:
+            self.display.error("Geçersiz seçim!")
+            return
         
-        return None
+        if book:
+            self.display.success(f"Kitap bulundu:")
+            print(f"\tBaşlık: {book.title}")
+            print(f"\tYazar: {book.author}")
+            print(f"\tISBN: {book.isbn}")
+            print(f"\tDurum: {'Ödünç verildi' if book.is_borrowed else 'Mevcut'}")
+        else:
+            self.display.error("Kitap bulunamadı.")
+
+
 
     @property
     def total_books(self):
