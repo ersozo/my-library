@@ -244,7 +244,7 @@ def borrow_book_menu(library):
         library.display_books()
         
         isbn = input("\nÖdünç almak istediğiniz kitabın ISBN numarası: ").strip()
-            if not isbn:
+        if not isbn:
             display.warning("ISBN numarası boş olamaz!")
             return
 
@@ -262,7 +262,7 @@ def return_book_menu(library):
     
     if library.total_books == 0:
         display.info("Kütüphanede iade edilecek kitap yok.")
-                return
+        return
 
     try:
         # Önce mevcut kitapları gösteriyoruz
@@ -272,7 +272,7 @@ def return_book_menu(library):
         isbn = input("\nİade etmek istediğiniz kitabın ISBN numarası: ").strip()
         if not isbn:
             display.warning("ISBN numarası boş olamaz!")
-                return
+            return
 
         library.return_book(isbn)
 

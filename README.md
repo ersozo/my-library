@@ -47,12 +47,21 @@ pip install -r requirements.txt
 ```
 my-library/
 ├── src/
-│   ├── library.py          # Ana kütüphane sınıfları
-│   ├── main.py             # CLI uygulaması
-│   ├── api.py              # FastAPI uygulaması
-│   ├── test_api.py         # API için test dosyası
-|   ├── test_library.py     # CLI uygulaması için test dosyası
-├── requirements.txt        # Python bağımlılıkları
+│   ├── library.py              # Ana kütüphane sınıfları
+│   ├── main.py                 # CLI uygulaması
+│   ├── api.py                  # FastAPI uygulaması
+│   ├── test_api.py             # API için test dosyası
+│   ├── test_library.py         # CLI uygulaması için test dosyası
+│   └── web/                    # Web demo uygulaması
+│       ├── api.py              # Web API sunucusu
+│       ├── library.py          # Web için kütüphane modülü
+│       ├── message_display.py  # Mesaj görüntüleme
+│       └── frontend/           # Frontend dosyaları
+│           ├── index.html      # Ana HTML sayfası
+│           └── app.js          # JavaScript uygulaması
+├── requirements.txt            # Python bağımlılıkları
+├── pyproject.toml              # Proje yapılandırması
+├── uv.lock                 
 └── README.md
 ```
 
@@ -179,4 +188,24 @@ uv run python -m pytest src/test_api.py -v
 # veya doğrudan python ile
 python -m pytest src/test_api.py -v
 ```
+
+### 3. Web Demo Uygulaması
+
+Web demo uygulamasını çalıştırmak için iki terminal penceresi gereklidir:
+
+#### Terminal 1: FastAPI Sunucusu
+```bash
+cd src/web
+uv run python -m uvicorn api:app --reload
+```
+
+#### Terminal 2: HTTP Sunucusu (Frontend)
+```bash
+cd src/web/frontend
+python -m http.server 3000
+```
+
+Web uygulamasına erişim: `http://localhost:3000`
+
+> **Not:** Web demo uygulaması, FastAPI backend'i ile iletişim kurar. Backend sunucusunun çalışır durumda olması gereklidir.
 
