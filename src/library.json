@@ -14,6 +14,13 @@
       "isbn": "9781098134181",
       "is_borrowed": false,
       "type": "Book"
+    },
+    {
+      "title": "Building LLM Apps",
+      "author": "Valentina Alto",
+      "isbn": "9781835462317",
+      "is_borrowed": false,
+      "type": "Book"
     }
   ]
 }
