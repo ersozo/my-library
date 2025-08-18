@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from library import Book, Library, PydanticBook, EBook, AudioBook
 from pydantic import ValidationError
 from message_display import UnicodeDisplay
@@ -51,7 +50,7 @@ def add_book_menu(library):
         if book_type not in ['1', '2', '3']:
             display.warning("Geçersiz seçim! Lütfen 1-3 arası bir sayı girin.")
             return
-        
+
         # Ortak bilgiler
         title = input("\tKitap başlığı\t\t\t: ").strip()
         author = input("\tYazar adı\t\t\t: ").strip()
@@ -173,7 +172,7 @@ def add_book_by_isbn_menu(library):
         if not isbn:
             display.warning("ISBN numarası boş olamaz!")
             return
-        
+
         display.info(f"ISBN {isbn} ile kitap aranıyor...")
         display.info("Open Library API'den bilgiler çekiliyor...")
         
@@ -245,7 +244,7 @@ def borrow_book_menu(library):
         library.display_books()
         
         isbn = input("\nÖdünç almak istediğiniz kitabın ISBN numarası: ").strip()
-        if not isbn:
+            if not isbn:
             display.warning("ISBN numarası boş olamaz!")
             return
 
@@ -263,8 +262,8 @@ def return_book_menu(library):
     
     if library.total_books == 0:
         display.info("Kütüphanede iade edilecek kitap yok.")
-        return
-    
+                return
+
     try:
         # Önce mevcut kitapları gösteriyoruz
         display.info("Mevcut kitaplar:")
@@ -273,7 +272,7 @@ def return_book_menu(library):
         isbn = input("\nİade etmek istediğiniz kitabın ISBN numarası: ").strip()
         if not isbn:
             display.warning("ISBN numarası boş olamaz!")
-            return
+                return
 
         library.return_book(isbn)
 
@@ -289,7 +288,7 @@ def main():
     display = UnicodeDisplay()
     display.info("Kütüphane Yönetim Sistemi başlatılıyor...")
     library = Library(name="Kütüphanem")
-    
+
     while True:
         try:
             display_menu()

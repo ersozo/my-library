@@ -5,7 +5,10 @@ description = "Global AI Hub Python 202 Bootcamp"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi==0.115.7",
     "httpx>=0.28.1",
     "pydantic>=2.11.7",
     "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "uvicorn[standard]==0.34.0",
 ]
