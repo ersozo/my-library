@@ -21,19 +21,25 @@ git clone https://github.com/ersozo/my-library.git
 cd my-library
 ```
 
-### 2. Bağımlılıkları Yükleyin
+### 2. Bağımlılıkları Yükleyin ve Sanal Ortamı Aktive Edin
 
-Projeye ait tüm bağımlıkları uv veya pip kullanarak yükleyin:
-
-uv kullanarak:
+uv kullanarak (ÖNERİLEN)
 
 ```bash
 uv sync
+
+source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\activate      # Windows
 ```
 
 veya pip kullanarak:
 
 ```bash
+python -m venv .venv
+
+source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\activate      # Windows
+
 pip install -r requirements.txt
 ```
 
@@ -76,14 +82,15 @@ python src/main.py
 ```
 
 Menü seçenekleri:
-- 1: Kitap ekle
-- 2: Kitapları listele
-- 3: Kitap ara
-- 4: Kitap sil
-- 5: Kitap ödünç al
-- 6: Kitap iade et
-- 7: İstatistikleri göster
-- 8: Çıkış
+
+- 1. Kitap Ekle (Manuel)
+- 2. Kitap Ekle (ISBN ile)
+- 3. Kitap Sil
+- 4. Kitapları Listele
+- 5. Kitap Ara
+- 6. Kitap Ödünç Al
+- 7. Kitap İade Et
+- 8. Çıkış
 
 
 ### 2. REST API (api.py)
