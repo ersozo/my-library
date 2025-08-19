@@ -17,7 +17,7 @@ ve API şeklinde yararlanılabilir. Ayrıca demo olarak basit bir web uygulamas�
 ### 1. Projeyi Klonlayın
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/ersozo/my-library.git
 cd my-library
 ```
 
