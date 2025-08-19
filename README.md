@@ -83,14 +83,14 @@ python src/main.py
 
 Menü seçenekleri:
 
-- 1. Kitap Ekle (Manuel)
-- 2. Kitap Ekle (ISBN ile)
-- 3. Kitap Sil
-- 4. Kitapları Listele
-- 5. Kitap Ara
-- 6. Kitap Ödünç Al
-- 7. Kitap İade Et
-- 8. Çıkış
+1. Kitap Ekle (Manuel)
+2. Kitap Ekle (ISBN ile)
+3. Kitap Sil
+4. Kitapları Listele
+5. Kitap Ara
+6. Kitap Ödünç Al
+7. Kitap İade Et
+8. Çıkış
 
 
 ### 2. REST API (api.py)
