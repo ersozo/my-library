@@ -12,13 +12,6 @@ ve API şeklinde yararlanılabilir. Ayrıca demo olarak basit bir web uygulamas�
 - REST API arayüzü
 - Pydantic ile veri doğrulama
 
-## Gereksinimler
-
-- Python 3.8+
-- FastAPI
-- Uvicorn
-- Pydantic
-
 ## Kurulum
 
 ### 1. Projeyi Klonlayın
@@ -29,6 +22,8 @@ cd my-library
 ```
 
 ### 2. Bağımlılıkları Yükleyin
+
+Projeye ait tüm bağımlıkları uv veya pip kullanarak yükleyin:
 
 uv kullanarak:
 
@@ -44,24 +39,25 @@ pip install -r requirements.txt
 
 ## Dosya Yapısı
 
-```
+```bash
 my-library/
 ├── src/
-│   ├── library.py              # Ana kütüphane sınıfları
+│   ├── library.py              # Kütüphane sınıfları
 │   ├── main.py                 # CLI uygulaması
+│   ├── message_display.py      # Konsol sembolleri için
 │   ├── api.py                  # FastAPI uygulaması
 │   ├── test_api.py             # API için test dosyası
 │   ├── test_library.py         # CLI uygulaması için test dosyası
 │   └── web/                    # Web demo uygulaması
 │       ├── api.py              # Web API sunucusu
-│       ├── library.py          # Web için kütüphane modülü
-│       ├── message_display.py  # Mesaj görüntüleme
+│       ├── library.py          # Web için kütüphane modülü (sqlite entegrasyonu)
+│       ├── message_display.py  # Konsol sembolleri için
 │       └── frontend/           # Frontend dosyaları
-│           ├── index.html      # Ana HTML sayfası
+│           ├── index.html      # Uygulama ana sayfası
 │           └── app.js          # JavaScript uygulaması
 ├── requirements.txt            # Python bağımlılıkları
 ├── pyproject.toml              # Proje yapılandırması
-├── uv.lock                 
+├── uv.lock
 └── README.md
 ```
 
@@ -87,7 +83,7 @@ Menü seçenekleri:
 - 5: Kitap ödünç al
 - 6: Kitap iade et
 - 7: İstatistikleri göster
-- 0: Çıkış
+- 8: Çıkış
 
 
 ### 2. REST API (api.py)
@@ -128,13 +124,12 @@ Dokümantasyon: `http://localhost:8000/docs`
 curl -X POST "http://localhost:8000/books" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Suç ve Ceza",
-    "author": "Dostoyevski",
-    "isbn": "1234567890",
-    "publication_year": 1866
+    "title": "Building LLM Apps",
+    "author": "Valentina Alto",
+    "isbn": "9781835462317",
+    ""publication_year": 2024
   }'
 ```
-
 #### ISBN ile Otomatik Kitap Ekleme
 ```bash
 curl -X POST "http://localhost:8000/books/isbn" \
@@ -146,13 +141,13 @@ curl -X POST "http://localhost:8000/books/isbn" \
 ### Kitap Arama
 ```bash
 # Başlığa göre ara
-curl "http://localhost:8000/books/search?title=Suç"
+curl "http://localhost:8000/books/search?title=Building%20LLM%20Apps"
 
 # Yazara göre ara
-curl "http://localhost:8000/books/search?author=Dostoyevski"
+curl "http://localhost:8000/books/search?author=Valentina%20Alto"
 
 # ISBN'e göre ara
-curl "http://localhost:8000/books/search?isbn=1234567890"
+curl "http://localhost:8000/books/search?isbn=9781835462317"
 ```
 
 ### Kitap Ödünç Alma
@@ -191,7 +186,8 @@ python -m pytest src/test_api.py -v
 
 ### 3. Web Demo Uygulaması
 
-Web demo uygulamasını çalıştırmak için iki terminal penceresi gereklidir:
+Demo uygulaması lokalde çalışır. Konsol uygulamasından farklı olarak sadece tek bir kitap cinsi ekler.<br>
+Veriler SQLite ile tutulur. Uygulamayı çalıştırmak için iki komut satırı penceresi (terminal) gereklidir:
 
 #### Terminal 1: FastAPI Sunucusu
 ```bash
@@ -209,3 +205,8 @@ Web uygulamasına erişim: `http://localhost:3000`
 
 > **Not:** Web demo uygulaması, FastAPI backend'i ile iletişim kurar. Backend sunucusunun çalışır durumda olması gereklidir.
 
+#### Geliştirmeye açık noktalar
+- Diğer kitap çeşitlerini ekleme.
+- Arama bölümü için filtre.
+- Farklı listeleme seçenekleri.
+- İşlemlerin izlenebilirliği için çözümler (timestamp vb.)

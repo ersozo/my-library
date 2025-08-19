@@ -77,26 +77,20 @@ def remove_book(isbn: str):
 # Kitap ödünç alma
 @app.patch("/books/{isbn}/borrow")
 def borrow_book(isbn: str):
-    book = library.find_book_by_isbn(isbn)
-    if not book:
-        raise HTTPException(404, "Kitap bulunamadı")
-    try:
-        book.borrow_book()
+    success = library.borrow_book(isbn)
+    if success:
+        book = library.find_book_by_isbn(isbn)
         return {"message": f"'{book.title}' ödünç alındı"}
-    except Exception as e:
-        raise HTTPException(400, str(e))
+    raise HTTPException(400, "Kitap ödünç alınamadı - kitap bulunamadı veya zaten ödünç verildi")
 
 # Kitap iade etme
 @app.patch("/books/{isbn}/return")
 def return_book(isbn: str):
-    book = library.find_book_by_isbn(isbn)
-    if not book:
-        raise HTTPException(404, "Kitap bulunamadı")
-    try:
-        book.return_book()
+    success = library.return_book(isbn)
+    if success:
+        book = library.find_book_by_isbn(isbn)
         return {"message": f"'{book.title}' iade edildi"}
-    except Exception as e:
-        raise HTTPException(400, str(e))
+    raise HTTPException(400, "Kitap iade edilemedi - kitap bulunamadı veya zaten iade edildi")
 
 # Kütüphane istatistikleri
 @app.get("/stats")

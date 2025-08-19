@@ -13,7 +13,7 @@ function libraryApp() {
             ödünç_kitap: 0,
             kütüphane: 'Kütüphane Web Demo'
         },
-        
+
         // Formlar
         bookForm: {
             title: '',
@@ -22,19 +22,19 @@ function libraryApp() {
             publication_year: new Date().getFullYear(),
             loading: false
         },
-        
+
         isbnForm: {
             isbn: '',
             loading: false
         },
-        
+
         searchForm: {
             title: '',
             author: '',
             isbn: '',
             loading: false
         },
-        
+
         searchResults: [],
         searchPerformed: false,
 
@@ -107,7 +107,7 @@ function libraryApp() {
         // Kitap işlemleri
         async addBook() {
             if (this.bookForm.loading) return;
-            
+
             this.bookForm.loading = true;
             try {
                 const result = await this.apiCall('/books', {
@@ -133,7 +133,7 @@ function libraryApp() {
 
         async addBookByIsbn() {
             if (this.isbnForm.loading) return;
-            
+
             const isbn = this.isbnForm.isbn.trim();
             if (!isbn) {
                 this.showMessage('❌ ISBN numarası gerekli', 'error');
@@ -141,7 +141,7 @@ function libraryApp() {
             }
 
             this.isbnForm.loading = true;
-            this.showMessage('📡 OpenLibrary API\'den kitap bilgileri alınıyor... (15 saniye bekleyebilir)', 'info');
+            this.showMessage('📡 OpenLibrary API\'den kitap bilgileri alınıyor... (lütfen bekleyin)', 'info');
 
             try {
                 const result = await this.apiCall('/books/isbn', {
@@ -200,7 +200,7 @@ function libraryApp() {
             if (this.searchForm.loading) return;
 
             const { title, author, isbn } = this.searchForm;
-            
+
             // En az bir alanın doldurulması gerekiyor
             if (!title.trim() && !author.trim() && !isbn.trim()) {
                 this.showMessage('❌ En az bir arama kriteri giriniz', 'error');
@@ -217,11 +217,11 @@ function libraryApp() {
                 if (isbn.trim()) params.append('isbn', isbn.trim());
 
                 const result = await this.apiCall(`/books/search?${params.toString()}`);
-                
+
                 // API bir kitap nesnesi döndürür, tutarlılık için diziye çevir
                 this.searchResults = result ? [result] : [];
                 this.searchPerformed = true;
-                
+
                 if (this.searchResults.length > 0) {
                     this.showMessage(`✅ ${this.searchResults.length} kitap bulundu`, 'success');
                 } else {
@@ -248,11 +248,11 @@ function libraryApp() {
             this.showMessage('🗑️ Arama temizlendi', 'info');
         },
 
-        // Yardımcı methodlar
+        // Yardımcı metodlar
         showMessage(text, type = 'info') {
             this.message = text;
             this.messageType = type;
-            
+
             // bilgilendirme mesajlarının otomatik gizlenmesi (5sn)
             if (type === 'success' || type === 'info') {
                 setTimeout(() => {
