@@ -19,10 +19,10 @@
                         </div>
                     </div>
                     
-                    <!-- Mesajlar - Başlık ve istatistikler arasında -->
+                    <!-- Mesajlar -->
                     <div class="flex-1 mx-8">
                         <div x-show="message" x-transition class="text-center">
-                            <div :class="messageClass" class="inline-block px-4 py-2 rounded-lg shadow-sm text-sm font-medium">
+                            <div :class="messageClass" class="inline-block px-4 py-4 rounded-lg shadow-sm text-sm font-medium">
                                 <p x-text="message"></p>
                             </div>
                         </div>
@@ -87,7 +87,7 @@
                             required
                             min="1401"
                             max="2030"
-                            placeholder="2024"
+                            placeholder="2025"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
@@ -198,7 +198,8 @@
                                     <div class="flex-1">
                                         <h4 class="font-semibold text-gray-800 mb-1" x-text="book.title"></h4>
                                         <p class="text-gray-600 text-sm mb-1" x-text="'Yazar: ' + book.author"></p>
-                                        <p class="text-gray-500 text-xs" x-text="'ISBN: ' + book.isbn"></p>
+                                        <p class="text-gray-500 text-xs mb-1" x-text="'ISBN: ' + book.isbn"></p>
+                                        <p class="text-gray-500 text-xs" x-text="book.publication_year ? 'Yayın Yılı: ' + book.publication_year : 'Yayın yılı belirtilmemiş'"></p>
                                     </div>
                                     <div class="ml-4">
                                         <span
@@ -258,8 +259,9 @@
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-800 mb-1" x-text="book.title"></h3>
-                                    <p class="text-gray-600 text-sm mb-2" x-text="'Yazar: ' + book.author"></p>
-                                    <p class="text-gray-500 text-xs" x-text="'ISBN: ' + book.isbn"></p>
+                                    <p class="text-gray-600 text-sm mb-1" x-text="'Yazar: ' + book.author"></p>
+                                    <p class="text-gray-500 text-xs mb-1" x-text="'ISBN: ' + book.isbn"></p>
+                                    <p class="text-gray-500 text-xs mb-2" x-text="book.publication_year ? 'Yayın Yılı: ' + book.publication_year : 'Yayın yılı belirtilmemiş'"></p>
                                 </div>
                                 <div class="ml-4">
                                     <span

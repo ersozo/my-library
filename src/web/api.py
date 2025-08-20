@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from library import Library, Book, PydanticBook
+from web_manager import WebManager
+from library import PydanticBook
 from message_display import UnicodeDisplay
 
 app = FastAPI(
@@ -18,27 +19,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-library = Library("Kütüphane Web Demo", "web_library.db")
+web_manager = WebManager("Kütüphane Web Demo", "web_library.db")
 
 # Ana sayfa
 @app.get("/", summary="Ana Sayfa")
 def root():
-    return {"message": "Kütüphane API", "kitap_sayısı": library.total_books}
+    return {"message": "Kütüphane API", "kitap_sayısı": web_manager.library.total_books}
 
 # Kitap ekleme
 @app.post("/books", summary="Kitap Ekle")
 def add_book(book_data: PydanticBook):
-    book = Book(book_data.title, book_data.author, book_data.isbn)
-    success = library.add_book(book)
-    if success:
-        return {"message": "Kitap eklendi", "kitap": book_data.model_dump()}
-    raise HTTPException(400, "Kitap eklenemedi - ISBN zaten mevcut")
+    result = web_manager.add_manual_book(book_data.model_dump())
+    if result["success"]:
+        return {"message": result["message"], "kitap": result["book"]}
+    raise HTTPException(400, result["message"])
 
 # Tüm kitapları listeleme
 @app.get("/books", summary="Tüm Kitapları Listele")
 def get_books():
-    return [{"title": b.title, "author": b.author, "isbn": b.isbn, "borrowed": b.is_borrowed} 
-            for b in library._books]
+    return web_manager.get_all_books()
 
 # Kitap bulma
 @app.get("/books/search", summary="Kitap Ara")
@@ -46,85 +45,51 @@ def search_books(title: str = "", author: str = "", isbn: str = ""):
     if not title and not author and not isbn:
         raise HTTPException(400, "En az bir arama kriteri gerekli")
     
-    # Başlık ile arama
-    if title:
-        book = library.find_book_by_title(title)
-        if book:
-            return {"title": book.title, "author": book.author, "isbn": book.isbn, "borrowed": book.is_borrowed}
-    
-    # Yazar ile arama
-    if author:
-        book = library.find_book_by_author(author)
-        if book:
-            return {"title": book.title, "author": book.author, "isbn": book.isbn, "borrowed": book.is_borrowed}
-    
-    # ISBN ile arama
-    if isbn:
-        book = library.find_book_by_isbn(isbn)
-        if book:
-            return {"title": book.title, "author": book.author, "isbn": book.isbn, "borrowed": book.is_borrowed}
-    
+    result = web_manager.search_books(title, author, isbn)
+    if result:
+        return result
     raise HTTPException(404, "Kitap bulunamadı")
 
 # Kitap silme
 @app.delete("/books/{isbn}")
 def remove_book(isbn: str):
-    success = library.remove_book(isbn)
-    if success:
-        return {"message": "Kitap silindi"}
-    raise HTTPException(404, "Kitap bulunamadı")
+    result = web_manager.remove_book(isbn)
+    if result["success"]:
+        return {"message": result["message"]}
+    raise HTTPException(404, result["message"])
 
 # Kitap ödünç alma
 @app.patch("/books/{isbn}/borrow")
 def borrow_book(isbn: str):
-    success = library.borrow_book(isbn)
-    if success:
-        book = library.find_book_by_isbn(isbn)
-        return {"message": f"'{book.title}' ödünç alındı"}
-    raise HTTPException(400, "Kitap ödünç alınamadı - kitap bulunamadı veya zaten ödünç verildi")
+    result = web_manager.borrow_book(isbn)
+    if result["success"]:
+        return {"message": result["message"]}
+    raise HTTPException(400, result["message"])
 
 # Kitap iade etme
 @app.patch("/books/{isbn}/return")
 def return_book(isbn: str):
-    success = library.return_book(isbn)
-    if success:
-        book = library.find_book_by_isbn(isbn)
-        return {"message": f"'{book.title}' iade edildi"}
-    raise HTTPException(400, "Kitap iade edilemedi - kitap bulunamadı veya zaten iade edildi")
+    result = web_manager.return_book(isbn)
+    if result["success"]:
+        return {"message": result["message"]}
+    raise HTTPException(400, result["message"])
 
 # Kütüphane istatistikleri
 @app.get("/stats")
 def get_stats():
-    total = library.total_books
-    borrowed = sum(1 for book in library._books if book.is_borrowed)
-    return {
-        "kütüphane": library.name,
-        "toplam_kitap": total,
-        "mevcut_kitap": total - borrowed,
-        "ödünç_kitap": borrowed
-    }
+    return web_manager.get_stats()
 
 # ISBN ile kitap ekleme
 @app.post("/books/isbn", summary="ISBN ile Kitap Ekle")
 def add_book_by_isbn(isbn_data: dict):
     isbn = isbn_data.get("isbn", "").strip()
     if not isbn:
-        raise HTTPException(400, "ISBN gerekli")
+        raise HTTPException(400, detail="ISBN gerekli")
     
-    success = library.add_book_by_isbn(isbn)
-    if success:
-        book = library.find_book_by_isbn(isbn)
-        if book:
-            return {
-                "message": "Kitap ISBN ile başarıyla eklendi", 
-                "kitap": {
-                    "title": book.title,
-                    "author": book.author,
-                    "isbn": book.isbn,
-                    "borrowed": book.is_borrowed
-                }
-            }
-    raise HTTPException(400, "Kitap eklenemedi - ISBN ile kitap bulunamadı veya zaten mevcut")
+    result = web_manager.add_book_by_isbn(isbn)
+    if result["success"]:
+        return {"message": result["message"], "kitap": result["book"]}    
+    raise HTTPException(400, detail=result["message"])
 
 if __name__ == "__main__":
     import uvicorn

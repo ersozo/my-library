@@ -125,7 +125,7 @@ class Library:
                 isbn=row[3]
             )
 
-        book.is_borrowed = bool(row[4])  # is_borrowed column
+        book.is_borrowed = bool(row[4]) 
         return book
 
     # Kitabı veritabanına kaydeder
@@ -344,37 +344,49 @@ class Library:
     def fetch_book_from_api(self, isbn: str):
         try:
             url = f"https://openlibrary.org/isbn/{isbn}.json"
-            with httpx.Client(timeout=15.0, follow_redirects=True) as client: # Increased timeout
+            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
                 response = client.get(url)
-
+                # 404 hatasını kontrol et
                 if response.status_code == 404:
-                    self.display.info(f"ISBN {isbn} OpenLibrary'de bulunamadı. Placeholder bilgiler kullanılıyor.")
-                    return self._create_placeholder_book_info(isbn)
+                    self.display.warning(f" ISBN {isbn} OpenLibrary'de bulunamadı.")
+                    return None
+                # 200 hatasını kontrol et
                 elif response.status_code != 200:
-                    self.display.warning(f" API hatası: HTTP {response.status_code}. Placeholder bilgiler kullanılıyor.")
-                    return self._create_placeholder_book_info(isbn)
-
+                    self.display.warning(f" API hatası: HTTP {response.status_code}")
+                    return None
+                # ISBN ile bulunan kitap bilgilerini al
                 data = response.json()
-                title = data.get("title", f"Kitap #{isbn}")
+                
+                title = data.get("title")
+                if not title:
+                    self.display.warning(f" API hatası: Kitap başlığı bulunamadı")
+                    return None
+
                 authors_data = data.get("authors", [])
+                if not authors_data:
+                    self.display.warning(f" API hatası: Yazar bilgisi bulunamadı")
+                    return None
 
-                author_names = []
-                if authors_data and len(authors_data) > 0:
-                    try:
-                        author_ref = authors_data[0]
-                        author_url = f"https://openlibrary.org{author_ref['key']}.json"
-                        author_response = client.get(author_url, timeout=10.0) # Increased author timeout
-                        if author_response.status_code == 200:
-                            author_data = author_response.json()
-                            author_name = author_data.get("name", "Bilinmeyen Yazar")
-                            author_names.append(author_name)
-                    except Exception:
-                        author_names.append("Bilinmeyen Yazar")
-
-                if not author_names:
-                    author_names = ["Bilinmeyen Yazar"]
-
-                author = author_names[0]
+                try:
+                    author_ref = authors_data[0]
+                    author_url = f"https://openlibrary.org{author_ref['key']}.json"
+                    author_response = client.get(author_url, timeout=10.0)
+                    
+                    if author_response.status_code != 200:
+                        self.display.warning(f" API hatası: Yazar bilgisi çekilemedi (HTTP {author_response.status_code})")
+                        return None
+                    
+                    author_data = author_response.json()
+                    author_name = author_data.get("name")
+                    if not author_name:
+                        self.display.warning(f" API hatası: Yazar adı bulunamadı")
+                        return None
+                    
+                    author = author_name
+                    
+                except Exception as e:
+                    self.display.warning(f" API hatası: Yazar bilgisi çekilirken hata: {e}")
+                    return None
 
                 self.display.success(f"Kitap bilgileri bulundu: {title} - {author}")
                 return {
@@ -384,23 +396,14 @@ class Library:
                 }
 
         except httpx.TimeoutException:
-            self.display.warning(f" API zaman aşımı (15 saniye). İnternet bağlantısı yavaş olabilir. Placeholder bilgiler kullanılıyor: ISBN {isbn}")
-            return self._create_placeholder_book_info(isbn)
+            self.display.warning(f" API zaman aşımı (15 saniye). İnternet bağlantısı yavaş olabilir.")
+            return None
         except (httpx.RequestError, httpx.ConnectError) as e:
-            self.display.warning(f" İnternet bağlantı sorunu. Placeholder bilgiler kullanılıyor: {e}")
-            return self._create_placeholder_book_info(isbn)
+            self.display.warning(f" İnternet bağlantı sorunu: {e}")
+            return None
         except Exception as e:
-            self.display.warning(f" API hatası. Placeholder bilgiler kullanılıyor: {e}")
-            return self._create_placeholder_book_info(isbn)
-
-    def _create_placeholder_book_info(self, isbn: str):
-        """Creates placeholder book info when API is unavailable"""
-        return {
-            "title": f"Kitap (ISBN: {isbn})",
-            "author": "Bilinmeyen Yazar",
-            "isbn": isbn
-        }
-
+            self.display.warning(f" API hatası: {e}")
+            return None
 
     def add_book_by_isbn(self, isbn: str):
         # Kitap zaten mevcut mu kontrolü
@@ -412,8 +415,8 @@ class Library:
         # API'den kitap bilgilerini al
         book_info = self.fetch_book_from_api(isbn)
         if not book_info:
-            # Fallback: placeholder bilgiler kullan
-            book_info = self._create_placeholder_book_info(isbn)
+            self.display.warning(f" ISBN {isbn} OpenLibrary'de bulunamadı. Manual olarak ekleme yapın.")
+            return False
 
         # Kitap nesnesi oluştur
         book = Book(book_info["title"], book_info["author"], isbn)

@@ -68,8 +68,8 @@ function libraryApp() {
         async apiCall(endpoint, options = {}) {
             try {
                 const response = await fetch(`${API_BASE}${endpoint}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
+                headers: {
+                    'Content-Type': 'application/json',
                         ...options.headers
                     },
                     ...options
@@ -91,7 +91,7 @@ function libraryApp() {
         async loadBooks() {
             try {
                 this.books = await this.apiCall('/books');
-            } catch (error) {
+        } catch (error) {
                 this.showMessage(`📚 Kitaplar yüklenirken hata: ${error.message}`, 'error');
             }
         },
@@ -137,8 +137,8 @@ function libraryApp() {
             const isbn = this.isbnForm.isbn.trim();
             if (!isbn) {
                 this.showMessage('❌ ISBN numarası gerekli', 'error');
-                return;
-            }
+            return;
+        }
 
             this.isbnForm.loading = true;
             this.showMessage('📡 OpenLibrary API\'den kitap bilgileri alınıyor... (lütfen bekleyin)', 'info');
@@ -154,7 +154,7 @@ function libraryApp() {
                 await this.loadBooks();
                 await this.loadStats();
             } catch (error) {
-                this.showMessage(`❌ ISBN ile kitap eklenirken hata: ${error.message}`, 'error');
+                this.showMessage(`❌ ${error.message}`, 'error');
             } finally {
                 this.isbnForm.loading = false;
             }
@@ -162,10 +162,10 @@ function libraryApp() {
 
         async removeBook(isbn) {
             if (!confirm('Bu kitabı silmek istediğinizden emin misiniz?')) {
-                return;
-            }
+        return;
+    }
 
-            try {
+    try {
                 const result = await this.apiCall(`/books/${isbn}`, {
                     method: 'DELETE'
                 });
@@ -184,13 +184,13 @@ function libraryApp() {
 
             try {
                 const result = await this.apiCall(`/books/${isbn}/${action}`, {
-                    method: 'PATCH'
-                });
+            method: 'PATCH'
+        });
 
                 this.showMessage(`✅ ${result.message}`, 'success');
                 await this.loadBooks();
                 await this.loadStats();
-            } catch (error) {
+    } catch (error) {
                 this.showMessage(`❌ Kitap ${actionText} hata: ${error.message}`, 'error');
             }
         },
@@ -204,8 +204,8 @@ function libraryApp() {
             // En az bir alanın doldurulması gerekiyor
             if (!title.trim() && !author.trim() && !isbn.trim()) {
                 this.showMessage('❌ En az bir arama kriteri giriniz', 'error');
-                return;
-            }
+        return;
+    }
 
             this.searchForm.loading = true;
             this.searchPerformed = false;
@@ -224,10 +224,10 @@ function libraryApp() {
 
                 if (this.searchResults.length > 0) {
                     this.showMessage(`✅ ${this.searchResults.length} kitap bulundu`, 'success');
-                } else {
+        } else {
                     this.showMessage('ℹ️ Arama kriterlerine uygun kitap bulunamadı', 'info');
-                }
-            } catch (error) {
+        }
+    } catch (error) {
                 this.searchResults = [];
                 this.searchPerformed = true;
                 this.showMessage(`❌ Arama yapılırken hata: ${error.message}`, 'error');
@@ -253,7 +253,7 @@ function libraryApp() {
             this.message = text;
             this.messageType = type;
 
-            // bilgilendirme mesajlarının otomatik gizlenmesi (5sn)
+            // bilgilendirme mesajlarının otomatik gizlenmesi (5sn göster)
             if (type === 'success' || type === 'info') {
                 setTimeout(() => {
                     this.message = '';
