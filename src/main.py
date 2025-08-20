@@ -28,27 +28,27 @@ def get_user_choice():
             if choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
                 return choice
             else:
-                display.warning("Geçersiz seçim! Lütfen 1-8 arası bir sayı girin.")
+                display.warning(" Geçersiz seçim! Lütfen 1-8 arası bir sayı girin.")
         except KeyboardInterrupt:
             print("")
-            display.warning("Program sonlandırılıyor...")
+            display.warning(" Program sonlandırılıyor...")
             return '8'
 
 
 def add_book_menu(library):
     print("\n--- KİTAP EKLEME (MANUEL) ---\n")
-    
+
     # Kitap türü seçimi
     display.book("Kitap türünü seçin:\n")
     print("\t1. Normal Kitap")
     print("\t2. E-Kitap")
     print("\t3. Sesli Kitap")
-    
+
     try:
         book_type = input("\nSeçiminizi yapın (1-3): ").strip()
-        
+
         if book_type not in ['1', '2', '3']:
-            display.warning("Geçersiz seçim! Lütfen 1-3 arası bir sayı girin.")
+            display.warning(" Geçersiz seçim! Lütfen 1-3 arası bir sayı girin.")
             return
 
         # Ortak bilgiler
@@ -74,7 +74,7 @@ def add_book_menu(library):
                 isbn=isbn,
                 publication_year=publication_year
             )
-            
+
             # Kitap türüne göre ek bilgiler al ve kitabı oluştur
             if book_type == '1':
                 # Normal Kitap
@@ -98,86 +98,86 @@ def add_book_menu(library):
                     display.error("Geçersiz süre! Sayısal değer girin.")
                     return
                 book = AudioBook(validated_book.title, validated_book.author, validated_book.isbn, duration_minutes)
-            
+
             library.add_book(book)
-            
+
         except ValidationError as e:
             print("")
             display.error("Kitap bilgileri geçersiz:")
             print("-" * 40)
-            
+
             # Hata mesajlarını daha iyi görünüm için gruplandırıyoruz
             errors_by_field = {}
             for error in e.errors():
                 field = error['loc'][0]
                 message = error['msg']
                 input_value = error.get('input', 'N/A')
-                
+
                 if field not in errors_by_field:
                     errors_by_field[field] = []
                 errors_by_field[field].append((message, input_value))
-            
+
             for field, field_errors in errors_by_field.items():
                 field_name = {
                     'title': 'Kitap Başlığı',
-                    'author': 'Yazar Adı', 
+                    'author': 'Yazar Adı',
                     'isbn': 'ISBN Numarası',
                     'publication_year': 'Yayın Yılı'
                 }.get(field, field)
-                
+
                 print(f"\n{field_name}:")
                 for message, input_value in field_errors:
                     if field == 'isbn':
                         if 'at least' in message:
-                            display.warning(f"ISBN en az 10 karakter olmalıdır (girilen: '{input_value}')")
+                            display.warning(f" ISBN en az 10 karakter olmalıdır (girilen: '{input_value}')")
                         elif 'at most' in message:
-                            display.warning(f"ISBN en fazla 13 karakter olmalıdır (girilen: '{input_value}')")
+                            display.warning(f" ISBN en fazla 13 karakter olmalıdır (girilen: '{input_value}')")
                         elif 'required' in message.lower():
-                            display.warning(f"ISBN numarası zorunludur")
+                            display.warning(f" ISBN numarası zorunludur")
                         else:
-                            display.warning(f"{message} (girilen: '{input_value}')")
+                            display.warning(f" {message} (girilen: '{input_value}')")
                     elif field == 'publication_year':
                         if 'greater than' in message:
-                            display.warning(f"Yayın yılı 1400'den büyük olmalıdır (girilen: {input_value})")
+                            display.warning(f" Yayın yılı 1400'den büyük olmalıdır (girilen: {input_value})")
                         elif 'less than or equal' in message:
-                            display.warning(f"Yayın yılı 2030'dan küçük veya eşit olmalıdır (girilen: {input_value})")
+                            display.warning(f" Yayın yılı 2030'dan küçük veya eşit olmalıdır (girilen: {input_value})")
                         elif 'required' in message.lower():
-                            display.warning(f"Yayın yılı zorunludur")
+                            display.warning(f" Yayın yılı zorunludur")
                         else:
-                            display.warning(f"{message} (girilen: {input_value})")
+                            display.warning(f" {message} (girilen: {input_value})")
                     elif 'required' in message.lower() or 'missing' in message.lower():
-                        display.warning(f"{field_name} zorunludur")
+                        display.warning(f" {field_name} zorunludur")
                     else:
-                        display.warning(f"{message} (girilen: '{input_value}')")
-            
+                        display.warning(f" {message} (girilen: '{input_value}')")
+
             print("\n" + "-" * 40)
             display.info("Lütfen bilgileri kontrol edip tekrar deneyin.")
             return
 
     except KeyboardInterrupt:
         print("")
-        display.warning("Kitap ekleme işlemi iptal edildi.")
+        display.warning(" Kitap ekleme işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Beklenmeyen hata: {e}")
 
 
 def add_book_by_isbn_menu(library):
     print("\n--- KİTAP EKLEME (ISBN İLE) ---")
-    
+
     try:
         display.info("Open Library API kullanarak kitap bilgileri otomatik olarak çekilecektir.")
-        display.warning("İnternet bağlantısı gereklidir.")
-        
+        display.warning(" İnternet bağlantısı gereklidir.")
+
         isbn = input("\n\tKitap ISBN numarasını girin: ").strip()
         if not isbn:
-            display.warning("ISBN numarası boş olamaz!")
+            display.warning(" ISBN numarası boş olamaz!")
             return
 
         display.info(f"ISBN {isbn} ile kitap aranıyor...")
         display.info("Open Library API'den bilgiler çekiliyor...")
-        
+
         success = library.add_book_by_isbn(isbn)
-        
+
         if success:
             display.success("Kitap başarıyla eklendi!")
         else:
@@ -185,7 +185,7 @@ def add_book_by_isbn_menu(library):
 
     except KeyboardInterrupt:
         print("")
-        display.warning("Kitap ekleme işlemi iptal edildi.")
+        display.warning(" Kitap ekleme işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap eklenirken hata oluştu: {e}")
 
@@ -196,17 +196,17 @@ def remove_book_menu(library):
         if library.total_books == 0:
             display.info("Kütüphanede silinecek kitap yok.")
             return
-            
+
         isbn = input("Silinecek kitabın ISBN numarası: ").strip()
         if not isbn:
-            display.warning("ISBN numarası boş olamaz!")
+            display.warning(" ISBN numarası boş olamaz!")
             return
 
         library.remove_book(isbn)
 
     except KeyboardInterrupt:
         print("")
-        display.warning("Kitap silme işlemi iptal edildi.")
+        display.warning(" Kitap silme işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap silinirken hata oluştu: {e}")
 
@@ -218,7 +218,7 @@ def list_books_menu(library):
 
 def find_book_menu(library, display):
     print("\n--- KİTAP ARAMA ---\n")
-    
+
     if library.total_books == 0:
         display.info("Kütüphanede aranacak kitap yok.")
         return
@@ -226,40 +226,40 @@ def find_book_menu(library, display):
         library.find_book()
     except KeyboardInterrupt:
         print("")
-        display.warning("Arama işlemi iptal edildi.")
+        display.warning(" Arama işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Arama sırasında hata oluştu: {e}")
 
 
 def borrow_book_menu(library):
     print("\n--- KİTAP ÖDÜNÇ ALMA ---")
-    
+
     if library.total_books == 0:
-        display.warning("Kütüphanede ödünç alınacak kitap yok.")
+        display.warning(" Kütüphanede ödünç alınacak kitap yok.")
         return
-    
+
     try:
         # Önce mevcut kitapları gösteriyoruz
         display.info("Mevcut kitaplar:")
         library.display_books()
-        
+
         isbn = input("\nÖdünç almak istediğiniz kitabın ISBN numarası: ").strip()
         if not isbn:
-            display.warning("ISBN numarası boş olamaz!")
+            display.warning(" ISBN numarası boş olamaz!")
             return
 
         library.borrow_book(isbn)
 
     except KeyboardInterrupt:
         print("")
-        display.warning("Kitap ödünç alma işlemi iptal edildi.")
+        display.warning(" Kitap ödünç alma işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap ödünç alınırken hata oluştu: {e}")
 
 
 def return_book_menu(library):
     print("\n--- KİTAP İADE ETME ---")
-    
+
     if library.total_books == 0:
         display.info("Kütüphanede iade edilecek kitap yok.")
         return
@@ -268,17 +268,17 @@ def return_book_menu(library):
         # Önce mevcut kitapları gösteriyoruz
         display.info("Mevcut kitaplar:")
         library.display_books()
-        
+
         isbn = input("\nİade etmek istediğiniz kitabın ISBN numarası: ").strip()
         if not isbn:
-            display.warning("ISBN numarası boş olamaz!")
+            display.warning(" ISBN numarası boş olamaz!")
             return
 
         library.return_book(isbn)
 
     except KeyboardInterrupt:
         print("")
-        display.warning("Kitap iade işlemi iptal edildi.")
+        display.warning(" Kitap iade işlemi iptal edildi.")
     except Exception as e:
         display.error(f"Kitap iade edilirken hata oluştu: {e}")
 
@@ -321,7 +321,7 @@ def main():
 
         except KeyboardInterrupt:
             print("")
-            display.warning("Program sonlandırılıyor...")
+            display.warning(" Program sonlandırılıyor...")
             display.info("İyi günler!\n")
             break
         except Exception as e:

@@ -28,7 +28,7 @@ class Book:
 
     def display_info(self):
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
-    
+
     def __str__(self):
         return self.display_info()
 
@@ -67,7 +67,7 @@ class Library:
             "is_borrowed": book.is_borrowed,
             "type": "Book"
         }
-        
+
         if isinstance(book, EBook):
             book_dict["type"] = "EBook"
             book_dict["file_format"] = book.file_format
@@ -75,13 +75,13 @@ class Library:
         elif isinstance(book, AudioBook):
             book_dict["type"] = "AudioBook"
             book_dict["duration_minutes"] = book.duration_minutes
-            
+
         return book_dict
 
     # dict formatından kitap nesnesine dönüştürür
     def _dict_to_book(self, book_dict: dict):
         book_type = book_dict.get("type", "Book")
-        
+
         if book_type == "EBook":
             book = EBook(
                 title=book_dict["title"],
@@ -103,7 +103,7 @@ class Library:
                 author=book_dict["author"],
                 isbn=book_dict["isbn"]
             )
-        
+
         book.is_borrowed = book_dict.get("is_borrowed", False)
         return book
 
@@ -115,10 +115,10 @@ class Library:
                 "name": self.name,
                 "books": books_data
             }
-            
+
             with open(self.json_file, 'w', encoding='utf-8') as f:
                 json.dump(library_data, f, indent=2, ensure_ascii=False)
-            
+
             self.display.success(f"Kütüphane verileri {self.json_file} dosyasına kaydedildi.")
             return True
         except Exception as e:
@@ -129,15 +129,15 @@ class Library:
     def load_from_json(self):
         try:
             if not Path(self.json_file).exists():
-                self.display.warning(f"JSON dosyası {self.json_file} bulunamadı. Boş kütüphane ile başlanıyor.")
+                self.display.warning(f" JSON dosyası {self.json_file} bulunamadı. Boş kütüphane ile başlanıyor.")
                 return False
-            
+
             with open(self.json_file, 'r', encoding='utf-8') as f:
                 library_data = json.load(f)
-            
+
             self.name = library_data.get("name", self.name)
             books_data = library_data.get("books", [])
-            
+
             self._books = [self._dict_to_book(book_dict) for book_dict in books_data]
             self.display.success(f"{self.total_books} kitap {self.json_file} dosyasından yüklendi.")
             return True
@@ -149,12 +149,12 @@ class Library:
         # ISBN ile kontrol
         existing_book = self.find_book_by_isbn(book.isbn)
         if existing_book:
-            self.display.warning(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            self.display.warning(f" Kitap zaten mevcut: {existing_book.display_info()}")
             return False
-        
+
         self._books.append(book)
         self.display.success(f"Kitap başarıyla eklendi: {book.display_info()}")
-        self.save_to_json()  
+        self.save_to_json()
         return True
 
     def remove_book(self, isbn: str):
@@ -162,7 +162,7 @@ class Library:
         if book:
             self._books.remove(book)
             self.display.success(f"Kitap başarıyla silindi: {book.display_info()}")
-            self.save_to_json()  
+            self.save_to_json()
             return True
         else:
             self.display.error(f"ISBN {isbn} ile kitap bulunamadı.")
@@ -174,7 +174,7 @@ class Library:
             try:
                 book.borrow_book()
                 self.display.success(f"Kitap ödünç verildi: {book.display_info()}")
-                self.save_to_json()  
+                self.save_to_json()
                 return True
             except Exception as e:
                 self.display.error(f"Hata: {e}")
@@ -189,7 +189,7 @@ class Library:
             try:
                 book.return_book()
                 self.display.success(f"Kitap iade edildi: {book.display_info()}")
-                self.save_to_json() 
+                self.save_to_json()
                 return True
             except Exception as e:
                 self.display.error(f"Hata: {e}")
@@ -202,38 +202,38 @@ class Library:
         if not self._books:
             self.display.info("Kütüphanede hiç kitap yok.")
             return
-        
+
         self.display.success(f"{self.name} - Toplam {self.total_books} kitap:")
         print("-" * 50)
         for i, book in enumerate(self._books, 1):
             status = " (Ödünç verildi)" if book.is_borrowed else ""
             print(f"\t{i}. {book.display_info()}{status}")
-    
+
     def find_book_by_title(self, title: str):
         for book in self._books:
             if book.title.lower() == title.lower():
                 return book
         return None
-    
+
     def find_book_by_isbn(self, isbn: str):
         for book in self._books:
             if book.isbn == isbn:
                 return book
         return None
-    
+
     def find_book_by_author(self, author: str):
         for book in self._books:
             if book.author.lower() == author.lower():
                 return book
         return None
-    
+
     def find_book(self):
         print("\t1. Başlığa göre ara")
         print("\t2. Yazara göre ara")
         print("\t3. ISBN'e göre ara")
-        
+
         choice = input("\nArama türünü seçin (1-3): ").strip()
-        
+
         if choice == "1":
             title = input("\n\tKitap başlığını girin: ").strip()
             book = self.find_book_by_title(title)
@@ -262,7 +262,7 @@ class Library:
     @property
     def total_books(self):
         return len(self._books)
-    
+
 
     def fetch_book_from_api(self, isbn: str):
         try:

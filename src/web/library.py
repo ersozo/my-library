@@ -28,7 +28,7 @@ class Book:
 
     def display_info(self):
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
-    
+
     def __str__(self):
         return self.display_info()
 
@@ -64,7 +64,7 @@ class Library:
         try:
             conn = sqlite3.connect(self.db_file)
             cursor = conn.cursor()
-            
+
             # Kitaplar tablosunu oluştur
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS books (
@@ -79,7 +79,7 @@ class Library:
                     duration_minutes INTEGER
                 )
             ''')
-            
+
             # Kütüphane bilgileri tablosunu oluştur
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS library_info (
@@ -87,12 +87,12 @@ class Library:
                     name TEXT NOT NULL
                 )
             ''')
-            
+
             # Kütüphane adını kontrol et ve ekle
             cursor.execute('SELECT COUNT(*) FROM library_info')
             if cursor.fetchone()[0] == 0:
                 cursor.execute('INSERT INTO library_info (name) VALUES (?)', (self.name,))
-            
+
             conn.commit()
             conn.close()
             self.display.success(f"SQLite veritabanı başarıyla başlatıldı: {self.db_file}")
@@ -102,7 +102,7 @@ class Library:
     # Veritabanından kitap nesnesine dönüştürür
     def _row_to_book(self, row):
         book_type = row[5]  # book_type column
-        
+
         if book_type == "EBook":
             book = EBook(
                 title=row[1],
@@ -124,7 +124,7 @@ class Library:
                 author=row[2],
                 isbn=row[3]
             )
-        
+
         book.is_borrowed = bool(row[4])  # is_borrowed column
         return book
 
@@ -133,13 +133,13 @@ class Library:
         try:
             conn = sqlite3.connect(self.db_file)
             cursor = conn.cursor()
-            
+
             # Kitap türünü belirle
             book_type = "Book"
             file_format = None
             file_size = None
             duration_minutes = None
-            
+
             if isinstance(book, EBook):
                 book_type = "EBook"
                 file_format = book.file_format
@@ -147,12 +147,12 @@ class Library:
             elif isinstance(book, AudioBook):
                 book_type = "AudioBook"
                 duration_minutes = book.duration_minutes
-            
+
             cursor.execute('''
                 INSERT INTO books (title, author, isbn, is_borrowed, book_type, file_format, file_size, duration_minutes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (book.title, book.author, book.isbn, int(book.is_borrowed), book_type, file_format, file_size, duration_minutes))
-            
+
             conn.commit()
             conn.close()
             return True
@@ -165,11 +165,11 @@ class Library:
         try:
             conn = sqlite3.connect(self.db_file)
             cursor = conn.cursor()
-            
+
             cursor.execute('''
                 UPDATE books SET is_borrowed = ? WHERE isbn = ?
             ''', (int(book.is_borrowed), book.isbn))
-            
+
             conn.commit()
             conn.close()
             return True
@@ -182,9 +182,9 @@ class Library:
         try:
             conn = sqlite3.connect(self.db_file)
             cursor = conn.cursor()
-            
+
             cursor.execute('DELETE FROM books WHERE isbn = ?', (isbn,))
-            
+
             conn.commit()
             conn.close()
             return True
@@ -197,20 +197,20 @@ class Library:
         try:
             conn = sqlite3.connect(self.db_file)
             cursor = conn.cursor()
-            
+
             # Kütüphane adını yükle
             cursor.execute('SELECT name FROM library_info LIMIT 1')
             result = cursor.fetchone()
             if result:
                 self.name = result[0]
-            
+
             # Kitapları yükle
             cursor.execute('SELECT * FROM books')
             rows = cursor.fetchall()
-            
+
             self._books = [self._row_to_book(row) for row in rows]
             conn.close()
-            
+
             self.display.success(f"{self.total_books} kitap veritabanından yüklendi.")
             return True
         except Exception as e:
@@ -221,9 +221,9 @@ class Library:
         # ISBN ile kontrol
         existing_book = self.find_book_by_isbn(book.isbn)
         if existing_book:
-            self.display.warning(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            self.display.warning(f" Kitap zaten mevcut: {existing_book.display_info()}")
             return False
-        
+
         # Veritabanına kaydet
         if self.save_book_to_db(book):
             self._books.append(book)
@@ -279,38 +279,38 @@ class Library:
         if not self._books:
             self.display.info("Kütüphanede hiç kitap yok.")
             return
-        
+
         self.display.success(f"{self.name} - Toplam {self.total_books} kitap:")
         print("-" * 50)
         for i, book in enumerate(self._books, 1):
             status = " (Ödünç verildi)" if book.is_borrowed else ""
             print(f"\t{i}. {book.display_info()}{status}")
-    
+
     def find_book_by_title(self, title: str):
         for book in self._books:
             if book.title.lower() == title.lower():
                 return book
         return None
-    
+
     def find_book_by_isbn(self, isbn: str):
         for book in self._books:
             if book.isbn == isbn:
                 return book
         return None
-    
+
     def find_book_by_author(self, author: str):
         for book in self._books:
             if book.author.lower() == author.lower():
                 return book
         return None
-    
+
     def find_book(self):
         print("\t1. Başlığa göre ara")
         print("\t2. Yazara göre ara")
         print("\t3. ISBN'e göre ara")
-        
+
         choice = input("\nArama türünü seçin (1-3): ").strip()
-        
+
         if choice == "1":
             title = input("\n\tKitap başlığını girin: ").strip()
             book = self.find_book_by_title(title)
@@ -339,7 +339,7 @@ class Library:
     @property
     def total_books(self):
         return len(self._books)
-    
+
 
     def fetch_book_from_api(self, isbn: str):
         try:
@@ -351,7 +351,7 @@ class Library:
                     self.display.info(f"ISBN {isbn} OpenLibrary'de bulunamadı. Placeholder bilgiler kullanılıyor.")
                     return self._create_placeholder_book_info(isbn)
                 elif response.status_code != 200:
-                    self.display.warning(f"API hatası: HTTP {response.status_code}. Placeholder bilgiler kullanılıyor.")
+                    self.display.warning(f" API hatası: HTTP {response.status_code}. Placeholder bilgiler kullanılıyor.")
                     return self._create_placeholder_book_info(isbn)
 
                 data = response.json()
@@ -384,13 +384,13 @@ class Library:
                 }
 
         except httpx.TimeoutException:
-            self.display.warning(f"API zaman aşımı (15 saniye). İnternet bağlantısı yavaş olabilir. Placeholder bilgiler kullanılıyor: ISBN {isbn}")
+            self.display.warning(f" API zaman aşımı (15 saniye). İnternet bağlantısı yavaş olabilir. Placeholder bilgiler kullanılıyor: ISBN {isbn}")
             return self._create_placeholder_book_info(isbn)
         except (httpx.RequestError, httpx.ConnectError) as e:
-            self.display.warning(f"İnternet bağlantı sorunu. Placeholder bilgiler kullanılıyor: {e}")
+            self.display.warning(f" İnternet bağlantı sorunu. Placeholder bilgiler kullanılıyor: {e}")
             return self._create_placeholder_book_info(isbn)
         except Exception as e:
-            self.display.warning(f"API hatası. Placeholder bilgiler kullanılıyor: {e}")
+            self.display.warning(f" API hatası. Placeholder bilgiler kullanılıyor: {e}")
             return self._create_placeholder_book_info(isbn)
 
     def _create_placeholder_book_info(self, isbn: str):
@@ -406,7 +406,7 @@ class Library:
         # Kitap zaten mevcut mu kontrolü
         existing_book = self.find_book_by_isbn(isbn)
         if existing_book:
-            self.display.error(f"Kitap zaten mevcut: {existing_book.display_info()}")
+            self.display.warning(f" Kitap zaten mevcut: {existing_book.display_info()}")
             return False
 
         # API'den kitap bilgilerini al
