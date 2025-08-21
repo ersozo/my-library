@@ -32,7 +32,6 @@ def add_book_by_isbn(isbn_data: dict):
     
     success = library.add_book_by_isbn(isbn)
     if success:
-        # Eklenen kitabı bul ve döndür
         book = library.find_book_by_isbn(isbn)
         if book:
             return {
@@ -44,7 +43,7 @@ def add_book_by_isbn(isbn_data: dict):
                     "borrowed": book.is_borrowed
                 }
             }
-    raise HTTPException(400, "Kitap eklenemedi - ISBN ile kitap bulunamadı veya zaten mevcut")
+    raise HTTPException(400, "Kitap eklenemedi - ISBN OpenLibrary'de bulunamadı, lütfen manuel ekleme yapın.")
 
 # Tüm kitapları listeleme
 @app.get("/books", summary="Tüm Kitapları Listele")

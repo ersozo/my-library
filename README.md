@@ -54,10 +54,11 @@ my-library/
 │   ├── api.py                  # FastAPI uygulaması
 │   ├── test_api.py             # API için test dosyası
 │   ├── test_library.py         # CLI uygulaması için test dosyası
-│   └── web/                    # Web demo uygulaması
-│       ├── api.py              # Web API sunucusu
+│   └── web/                    # Web demo dosyaları
+│       ├── api.py              # Web API sunucusu (FastAPI)
 │       ├── library.py          # Web için kütüphane modülü (sqlite entegrasyonu)
 │       ├── message_display.py  # Konsol sembolleri için
+│       ├── web_manager.py      # Web uygulaması
 │       └── frontend/           # Frontend dosyaları
 │           ├── index.html      # Uygulama ana sayfası
 │           └── app.js          # JavaScript uygulaması
@@ -143,7 +144,7 @@ curl -X POST "http://localhost:8000/books/isbn" \
   -H "Content-Type: application/json" \
   -d '{"isbn": "9781492034865"}'
 ```
-> **Not:** Bu endpoint kitap bilgilerini OpenLibrary API'den otomatik olarak alır. API erişim sorunu olduğunda placeholder bilgiler kullanır.
+> **Not:** Bu endpoint kitap bilgilerini OpenLibrary API'den otomatik olarak alır.
 
 ### Kitap Arama
 ```bash

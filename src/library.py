@@ -281,25 +281,39 @@ class Library:
                 data = response.json()
 
                 # Kitap bilgilerini al
-                title = data.get("title", "Bilinmeyen Başlık")
-                authors_data = data.get("authors", [])
+                title = data.get("title")
+                if not title:
+                    self.display.error(f"API hatası: Kitap başlığı bulunamadı")
+                    return None
 
-                # Yazar adlarını al
+                authors_data = data.get("authors", [])
+                if not authors_data:
+                    self.display.error(f"API hatası: Yazar bilgisi bulunamadı")
+                    return None
+
                 author_names = []
                 for author_ref in authors_data:
                     try:
                         author_url = f"https://openlibrary.org{author_ref['key']}.json"
                         author_response = client.get(author_url, follow_redirects=True)
-                        if author_response.status_code == 200:
-                            author_data = author_response.json()
-                            author_name = author_data.get("name", "Bilinmeyen Yazar")
-                            author_names.append(author_name)
-                    except Exception:
-                        author_names.append("Bilinmeyen Yazar")
-
-                # Eğer yazar bulunamazsa varsayılan değer kullan
+                        if author_response.status_code != 200:
+                            self.display.error(f"API hatası: Yazar bilgisi çekilemedi (HTTP {author_response.status_code})")
+                            return None
+                        
+                        author_data = author_response.json()
+                        author_name = author_data.get("name")
+                        if not author_name:
+                            self.display.error(f"API hatası: Yazar adı bulunamadı")
+                            return None
+                        
+                        author_names.append(author_name)
+                    except Exception as e:
+                        self.display.error(f"API hatası: Yazar bilgisi çekilirken hata: {e}")
+                        return None
+                
                 if not author_names:
-                    author_names = ["Bilinmeyen Yazar"]
+                    self.display.error(f"API hatası: Hiç yazar bilgisi alınamadı")
+                    return None
 
                 # Birden fazla yazarı " & " ile birleştir
                 author = " & ".join(author_names)

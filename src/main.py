@@ -181,7 +181,7 @@ def add_book_by_isbn_menu(library):
         if success:
             display.success("Kitap başarıyla eklendi!")
         else:
-            display.error("Kitap eklenemedi. Lütfen ISBN'i ve internet bağlantınızı kontrol edin!")
+            display.error("Kitap eklenemedi. Lütfen ISBN'i ve internet bağlantınızı kontrol edin.")
 
     except KeyboardInterrupt:
         print("")
